@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karan N. Londe — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;1,300;1,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04050a;
+  --bg2:#080b14;
+  --cyan:#00e5ff;
+  --magenta:#ff2d78;
+  --amber:#ffb800;
+  --white:#f0f4ff;
+  --dim:#4a5070;
+  --code-bg:#0a0d1a;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:'Space Grotesk',sans-serif;
+  overflow-x:hidden;
+}
+
+/* ─── LOADER ─── */
+#loader{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 0.8s,visibility 0.8s;
+}
+#loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.loader-ring{
+  width:80px;height:80px;border-radius:50%;
+  border:2px solid transparent;
+  border-top-color:var(--cyan);border-right-color:var(--magenta);
+  animation:spin 1.2s linear infinite;margin-bottom:1.5rem;
+}
+.loader-text{font-size:0.7rem;letter-spacing:0.3em;color:var(--dim);text-transform:uppercase}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── CURSOR ─── */
+#cursor{
+  width:12px;height:12px;background:var(--cyan);
+  border-radius:50%;position:fixed;pointer-events:none;
+  z-index:9998;mix-blend-mode:screen;
+  transition:transform 0.1s,width 0.2s,height 0.2s;
+  transform:translate(-50%,-50%);
+}
+#cursor-ring{
+  width:36px;height:36px;border:1px solid rgba(0,229,255,0.4);
+  border-radius:50%;position:fixed;pointer-events:none;
+  z-index:9997;transform:translate(-50%,-50%);
+  transition:transform 0.25s,width 0.3s,height 0.3s;
+}
+
+/* ─── THREE.JS CANVAS ─── */
+#bg-canvas{
+  position:fixed;inset:0;z-index:0;
+  pointer-events:none;
+}
+#book-canvas{
+  position:relative;z-index:2;
+  display:block;margin:0 auto;
+  cursor:grab;
+}
+#book-canvas:active{cursor:grabbing}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:1.2rem 3rem;
+  display:flex;justify-content:space-between;align-items:center;
+}
+nav::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(4,5,10,0.95),transparent);
+  z-index:-1;pointer-events:none;
+}
+.nav-logo{
+  font-family:'Space Mono',monospace;
+  font-size:0.85rem;color:var(--cyan);text-decoration:none;
+  letter-spacing:0.1em;
+}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{
+  font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--dim);text-decoration:none;transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--white)}
+
+/* ─── HERO ─── */
+#hero{
+  position:relative;z-index:2;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:2rem;overflow:hidden;
+}
+.hero-grid-lines{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);
+  background-size:60px 60px;
+  perspective:600px;
+  transform:rotateX(60deg) scale(2.5) translateY(20%);
+  pointer-events:none;
+}
+.hero-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:0.68rem;letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:1.5rem;
+  animation:fadeUp 1s 0.3s both;
+}
+.hero-name{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(3.5rem,10vw,8rem);
+  font-weight:400;line-height:0.95;
+  letter-spacing:-0.02em;
+  animation:fadeUp 1s 0.5s both;
+}
+.hero-name .line1{display:block;color:var(--white)}
+.hero-name .line2{display:block;font-style:italic;color:transparent;
+  -webkit-text-stroke:1px var(--magenta);}
+.hero-roles{
+  display:flex;gap:1.5rem;margin-top:1.8rem;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp 1s 0.7s both;
+}
+.role-chip{
+  padding:0.4rem 1.2rem;border:1px solid;border-radius:999px;
+  font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:500;
+}
+.role-chip.c{ border-color:var(--cyan);color:var(--cyan);}
+.role-chip.m{ border-color:var(--magenta);color:var(--magenta);}
+.role-chip.a{ border-color:var(--amber);color:var(--amber);}
+.hero-scroll{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:0.8rem;
+  animation:fadeUp 1s 1.2s both;
+}
+.scroll-line{
+  width:1px;height:60px;
+  background:linear-gradient(to bottom,var(--cyan),transparent);
+  animation:scrollPulse 2s ease-in-out infinite;
+}
+.scroll-txt{font-size:0.6rem;letter-spacing:0.25em;color:var(--dim);text-transform:uppercase}
+@keyframes scrollPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── SECTION SHARED ─── */
+.chapter{
+  position:relative;z-index:2;
+  max-width:1200px;margin:0 auto;padding:8rem 3rem;
+}
+.ch-label{
+  font-family:'Space Mono',monospace;
+  font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--dim);
+  margin-bottom:0.8rem;display:flex;align-items:center;gap:1rem;
+}
+.ch-label::after{content:'';flex:1;height:1px;background:var(--dim);opacity:0.3}
+.ch-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.2rem,5vw,4rem);
+  font-weight:400;line-height:1.1;color:var(--white);margin-bottom:1.5rem;
+}
+.ch-title em{font-style:italic;color:var(--cyan)}
+.ch-title .stroke{
+  color:transparent;-webkit-text-stroke:1px var(--magenta);
+}
+
+/* ─── ABOUT ─── */
+.about-layout{
+  display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;margin-top:3rem;
+}
+.about-text p{
+  color:#8892b0;line-height:1.9;font-size:0.95rem;margin-bottom:1rem;
+}
+.about-text p strong{color:var(--cyan);font-weight:500}
+/* 3D tilt card */
+.tilt-card{
+  background:rgba(0,229,255,0.03);
+  border:1px solid rgba(0,229,255,0.15);
+  border-radius:8px;padding:2.5rem;
+  transform-style:preserve-3d;
+  transition:transform 0.1s;
+}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.stat{border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:1rem}
+.stat-n{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:3rem;font-weight:300;line-height:1;
+}
+.stat-n.c{color:var(--cyan)}.stat-n.m{color:var(--magenta)}.stat-n.a{color:var(--amber)}
+.stat-l{font-size:0.7rem;color:var(--dim);letter-spacing:0.1em;margin-top:0.3rem}
+.langs{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem}
+.lang-tag{
+  padding:0.25rem 0.8rem;border:1px solid rgba(255,184,0,0.3);
+  border-radius:3px;font-size:0.68rem;color:var(--amber);letter-spacing:0.08em;
+}
+
+/* ─── KEYLINE SHOWCASE ─── */
+.keyline-section{background:var(--bg2);padding:6rem 0;position:relative;z-index:2}
+.keyline-inner{max-width:1200px;margin:0 auto;padding:0 3rem}
+.keyline-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:3rem;
+}
+.keyline-card{
+  background:var(--bg);border:1px solid rgba(255,255,255,0.06);border-radius:6px;
+  padding:1.5rem;cursor:pointer;transition:border-color 0.3s,transform 0.3s;
+  position:relative;overflow:hidden;
+}
+.keyline-card:hover{border-color:rgba(0,229,255,0.4);transform:translateY(-4px)}
+.keyline-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top left,rgba(0,229,255,0.05),transparent 60%);
+  opacity:0;transition:opacity 0.3s;
+}
+.keyline-card:hover::before{opacity:1}
+.keyline-label{
+  font-family:'Space Mono',monospace;font-size:0.62rem;
+  color:var(--cyan);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;
+}
+.keyline-desc{font-size:0.78rem;color:var(--dim);margin-top:1rem;line-height:1.6}
+
+/* ─── CODE SHOWCASE ─── */
+.code-section{position:relative;z-index:2;padding:0}
+.code-layout{
+  display:grid;grid-template-columns:1fr 1.4fr;gap:4rem;align-items:start;
+  margin-top:3rem;
+}
+.code-info h3{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:1.6rem;color:var(--white);margin-bottom:1rem;
+}
+.code-info p{font-size:0.88rem;color:#8892b0;line-height:1.8;margin-bottom:1.5rem}
+.code-badge{
+  display:inline-block;padding:0.3rem 0.8rem;
+  background:rgba(255,45,120,0.1);border:1px solid rgba(255,45,120,0.3);
+  border-radius:3px;font-size:0.68rem;color:var(--magenta);
+  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;margin-right:0.5rem;
+}
+.code-window{
+  background:var(--code-bg);border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,0.5);
+}
+.code-titlebar{
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.8rem 1rem;border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.code-filename{
+  margin-left:auto;font-family:'Space Mono',monospace;
+  font-size:0.65rem;color:var(--dim);letter-spacing:0.1em;
+}
+pre{
+  padding:1.5rem;overflow-x:auto;
+  font-family:'Space Mono',monospace;font-size:0.78rem;line-height:1.9;
+}
+.kw{color:#ff79c6}
+.fn{color:#50fa7b}
+.str{color:#f1fa8c}
+.num{color:var(--cyan)}
+.cm{color:var(--dim);font-style:italic}
+.var{color:#bd93f9}
+.op{color:var(--magenta)}
+.cls{color:var(--amber)}
+.code-line{display:block;transition:background 0.2s}
+.code-line:hover{background:rgba(255,255,255,0.03);border-radius:3px}
+
+/* ─── PROJECTS ─── */
+.projects-section{position:relative;z-index:2}
+.projects-strip{
+  display:flex;gap:1.5rem;margin-top:3rem;
+  overflow-x:auto;padding-bottom:1.5rem;
+  scrollbar-width:thin;scrollbar-color:var(--cyan) transparent;
+}
+.projects-strip::-webkit-scrollbar{height:3px}
+.projects-strip::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:3px}
+.proj-card{
+  min-width:320px;background:var(--bg2);
+  border:1px solid rgba(255,255,255,0.06);border-radius:8px;
+  overflow:hidden;transition:transform 0.3s,box-shadow 0.3s;
+  flex-shrink:0;cursor:pointer;
+}
+.proj-card:hover{
+  transform:translateY(-8px) scale(1.01);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 1px rgba(0,229,255,0.2);
+}
+.proj-visual{height:180px;position:relative;overflow:hidden}
+.proj-visual canvas{width:100%;height:100%}
+.proj-body{padding:1.5rem}
+.proj-num-tag{
+  font-family:'Space Mono',monospace;font-size:0.6rem;
+  color:var(--cyan);letter-spacing:0.2em;margin-bottom:0.5rem;
+}
+.proj-name{font-weight:600;font-size:1rem;color:var(--white);margin-bottom:0.5rem}
+.proj-blurb{font-size:0.8rem;color:#8892b0;line-height:1.6;margin-bottom:1rem}
+.proj-stack{display:flex;flex-wrap:wrap;gap:0.4rem}
+.stack-pill{
+  padding:0.2rem 0.6rem;border-radius:999px;font-size:0.62rem;
+  border:1px solid rgba(0,229,255,0.2);color:var(--cyan);letter-spacing:0.06em;
+}
+
+/* ─── EXPERIENCE ─── */
+.exp-section{background:var(--bg2);padding:6rem 0;position:relative;z-index:2}
+.exp-inner{max-width:1200px;margin:0 auto;padding:0 3rem}
+.timeline{position:relative;margin-top:4rem;padding-left:3rem}
+.timeline::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:1px;background:linear-gradient(to bottom,var(--cyan),var(--magenta),transparent);
+}
+.tl-node{
+  position:absolute;left:-5px;top:0.3rem;
+  width:11px;height:11px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 12px var(--cyan);
+}
+.tl-entry{position:relative;margin-bottom:4rem}
+.tl-period{
+  font-family:'Space Mono',monospace;font-size:0.65rem;
+  color:var(--cyan);letter-spacing:0.15em;margin-bottom:0.4rem;
+}
+.tl-role{
+  font-family:'Playfair Display',serif;
+  font-size:1.8rem;font-weight:400;color:var(--white);margin-bottom:0.3rem;
+}
+.tl-company{font-size:0.85rem;color:var(--magenta);margin-bottom:1.5rem;font-weight:500}
+.tl-items{list-style:none}
+.tl-items li{
+  font-size:0.88rem;color:#8892b0;line-height:1.7;
+  padding:0.4rem 0 0.4rem 1.5rem;position:relative;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.tl-items li::before{
+  content:'▸';position:absolute;left:0;color:var(--cyan);font-size:0.7rem;top:0.5rem;
+}
+.tl-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem}
+.tl-tag{
+  padding:0.25rem 0.8rem;border:1px solid rgba(255,184,0,0.25);
+  border-radius:2px;font-size:0.65rem;color:var(--amber);letter-spacing:0.08em;
+}
+
+/* ─── BOOK 3D ─── */
+.book-section{
+  position:relative;z-index:2;
+  min-height:100vh;display:flex;align-items:center;
+  overflow:hidden;
+}
+.book-bg-text{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:20vw;font-weight:300;color:rgba(201,168,76,0.03);
+  white-space:nowrap;pointer-events:none;letter-spacing:-0.05em;user-select:none;
+}
+.book-layout{
+  max-width:1200px;margin:0 auto;padding:0 3rem;
+  display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;
+  width:100%;
+}
+.book-meta-block{z-index:3}
+.book-title-big{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,4.5vw,3.5rem);font-weight:400;
+  color:var(--amber);line-height:1.1;margin-bottom:0.5rem;
+}
+.book-sub-italic{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:1.1rem;color:#8892b0;margin-bottom:2rem;
+}
+.book-desc{font-size:0.9rem;color:#8892b0;line-height:1.9;margin-bottom:2rem}
+.book-detail{
+  display:flex;gap:2rem;margin-bottom:2.5rem;flex-wrap:wrap;
+}
+.book-detail-item{}
+.bdl{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--dim)}
+.bdv{font-size:0.9rem;color:var(--amber);margin-top:0.2rem}
+.book-cta{
+  display:inline-block;padding:0.9rem 2.5rem;
+  background:var(--amber);color:#000;font-weight:700;
+  font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;
+  text-decoration:none;border-radius:3px;transition:background 0.2s,transform 0.2s;
+}
+.book-cta:hover{background:#ffd04d;transform:translateY(-2px)}
+.book-canvas-wrap{
+  display:flex;align-items:center;justify-content:center;z-index:3;
+}
+
+/* ─── SKILLS ─── */
+.skills-viz{margin-top:3rem}
+.skill-bars{display:grid;grid-template-columns:1fr 1fr;gap:1rem 3rem}
+.skill-item{margin-bottom:0.8rem}
+.skill-name{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:0.8rem;color:var(--white);margin-bottom:0.5rem;font-weight:500;
+}
+.skill-pct{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--dim)}
+.skill-track{
+  height:3px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;
+}
+.skill-fill{
+  height:100%;border-radius:3px;
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 1.2s cubic-bezier(0.22,1,0.36,1);
+}
+.skill-fill.c{background:linear-gradient(to right,var(--cyan),rgba(0,229,255,0.3))}
+.skill-fill.m{background:linear-gradient(to right,var(--magenta),rgba(255,45,120,0.3))}
+.skill-fill.a{background:linear-gradient(to right,var(--amber),rgba(255,184,0,0.3))}
+.skill-fill.animated{transform:scaleX(1)}
+
+/* ─── CONTACT ─── */
+.contact-section{
+  position:relative;z-index:2;
+  min-height:60vh;display:flex;align-items:center;
+  border-top:1px solid rgba(255,255,255,0.04);
+}
+.contact-inner{max-width:1200px;margin:0 auto;padding:6rem 3rem;width:100%}
+.contact-big{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.5rem,8vw,7rem);font-weight:300;font-style:italic;
+  line-height:0.95;color:var(--white);margin-bottom:3rem;
+}
+.contact-big span{color:transparent;-webkit-text-stroke:1px var(--cyan)}
+.contact-links{display:flex;flex-wrap:wrap;gap:1.5rem;align-items:center}
+.c-link{
+  display:flex;align-items:center;gap:0.8rem;
+  font-size:0.88rem;color:var(--dim);text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:0.5rem;
+  transition:color 0.2s,border-color 0.2s;
+}
+.c-link:hover{color:var(--white);border-color:var(--cyan)}
+.c-link-icon{
+  width:32px;height:32px;border:1px solid rgba(255,255,255,0.1);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;color:var(--cyan);
+}
+
+/* ─── FOOTER ─── */
+footer{
+  position:relative;z-index:2;
+  padding:2rem 3rem;border-top:1px solid rgba(255,255,255,0.04);
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:0.7rem;color:var(--dim);font-family:'Space Mono',monospace;
+}
+
+/* ─── SCROLL REVEAL ─── */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.9s,transform 0.9s}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity 0.9s,transform 0.9s}
+.reveal-left.in{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(40px);transition:opacity 0.9s,transform 0.9s}
+.reveal-right.in{opacity:1;transform:translateX(0)}
+
+/* ─── NOISE overlay ─── */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.4;
+}
+
+@media(max-width:768px){
+  nav{padding:1rem 1.5rem}
+  .nav-links{display:none}
+  .chapter{padding:5rem 1.5rem}
+  .about-layout,.code-layout,.book-layout,.skill-bars,.keyline-grid,.contact-inner{
+    grid-template-columns:1fr;gap:2.5rem;
+  }
+  .keyline-grid{grid-template-columns:1fr 1fr}
+  .hero-name{font-size:clamp(3rem,12vw,5rem)}
+}
+
+/* ───── TIMELINE ───── */
+#timeline-section{position:relative;z-index:2;background:#030014;padding:120px 0;}
+.timeline-container{max-width:1200px;margin:auto;padding:0 2rem;}
+.timeline-header{text-align:center;margin-bottom:80px;}
+.timeline-eyebrow{font-size:.75rem;letter-spacing:.2em;color:#FF6B35;text-transform:uppercase;margin-bottom:1rem;}
+.timeline-title{font-family:'Playfair Display',serif;font-size:3rem;color:white;}
+.timeline-wrapper{position:relative;}
+.timeline-line{position:absolute;left:50%;top:0;width:2px;height:100%;transform-origin:top;transform:scaleY(0);background:linear-gradient(to bottom,#FF6B35,#00B4D8,#C77DFF);}
+.timeline-item{position:relative;margin-bottom:80px;opacity:0;transform:translateY(40px);transition:all .8s ease;}
+.timeline-item.show{opacity:1;transform:translateY(0);}
+.timeline-dot{position:absolute;left:50%;top:5px;width:16px;height:16px;border-radius:50%;background:#030014;transform:translateX(-50%);z-index:2;}
+.timeline-content{width:42%;}
+.timeline-content.left{text-align:right;margin-right:auto;padding-right:50px;}
+.timeline-content.right{margin-left:auto;padding-left:50px;}
+.timeline-year{display:block;color:#FF6B35;font-size:.8rem;letter-spacing:.15em;margin-bottom:.5rem;}
+.timeline-content h3{color:white;margin-bottom:.75rem;font-size:1.3rem;}
+.timeline-content p{color:rgba(255,255,255,.55);line-height:1.7;}
+@media(max-width:768px){.timeline-line{left:20px}.timeline-dot{left:20px}.timeline-content{width:100%;padding-left:55px!important;padding-right:0!important;text-align:left!important}}
+
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Initialising Universe</div>
+</div>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- PARTICLE BG CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">KNL_</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#design">Design</a></li>
+    <li><a href="#code">Code</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#book">Book</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section id="hero">
+  <div class="hero-grid-lines"></div>
+  <p class="hero-eyebrow">Belagavi, Karnataka · Est. 2002</p>
+  <h1 class="hero-name">
+    <span class="line1">Karan N.</span>
+    <span class="line2">Londe</span>
+  </h1>
+  <div class="hero-roles">
+    <span class="role-chip c">Engineer</span>
+    <span class="role-chip m">Designer</span>
+    <span class="role-chip a">Author</span>
+    <span class="role-chip c">AI/ML Builder</span>
+    <span class="role-chip m">STEM Creator</span>
+  </div>
+  <div class="hero-scroll">
+    <span class="scroll-txt">Scroll to explore</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══════════ ABOUT ═══════════ -->
+<section id="about" class="chapter">
+  <div class="ch-label">Chapter 01 — Origin</div>
+  <h2 class="ch-title">The <em>mind</em> behind<br>the <span class="stroke">machine</span></h2>
+  <div class="about-layout">
+    <div class="about-text reveal-left">
+      <p>I'm a <strong>BE Electronics & Communication</strong> engineer from KLE Dr. M.S. Sheshgiri College, Belagavi — trained to think in circuits, wired to think in systems.</p>
+      <p>At <strong>Gyanpro Educational Innovation</strong>, I spent 15 months turning abstract education into tangible products: electronics kits, teaching aids, science labs — designed in CorelDraw, assembled by hand, deployed across Karnataka and Kerala.</p>
+      <p>My AI/ML work ranges from <strong>industrial bin-packing algorithms</strong> to humanoid robot assistants. I believe engineering should feel like magic — invisible infrastructure that just works.</p>
+      <p>Beyond all of it: I am a <strong>published author</strong>. My book explores the deep structure of Time. Same systems-thinking, different universe.</p>
+    </div>
+    <div class="reveal-right">
+      <div class="tilt-card" id="aboutCard">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-n c">5+</div><div class="stat-l">AI / ML Projects</div></div>
+          <div class="stat"><div class="stat-n m">150+</div><div class="stat-l">Products Designed</div></div>
+          <div class="stat"><div class="stat-n a">1</div><div class="stat-l">Published Book</div></div>
+          <div class="stat"><div class="stat-n c">15mo</div><div class="stat-l">Industry Experience</div></div>
+        </div>
+        <div class="ch-label" style="margin-bottom:0.6rem">Languages Known</div>
+        <div class="langs">
+          <span class="lang-tag">English</span>
+          <span class="lang-tag">Hindi</span>
+          <span class="lang-tag">Kannada</span>
+          <span class="lang-tag">Marathi</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ DESIGN — COREL KEYLINES ═══════════ -->
+<div id="design" class="keyline-section">
+  <div class="keyline-inner">
+    <div class="ch-label reveal">Chapter 02 — Design</div>
+    <h2 class="ch-title reveal">CorelDraw <em>Keylines</em><br>& Product Design</h2>
+    <p style="color:#8892b0;max-width:560px;line-height:1.8;font-size:0.9rem" class="reveal">
+      Every physical product starts as vectors. These keylines defined the cutting, folding, and assembly of 200+ STEM education products manufactured and deployed in schools across South India.
+    </p>
+    <div class="keyline-grid">
+      <!-- Keyline 1: Electronics Kit Box -->
+      <div class="keyline-card reveal">
+        <div class="keyline-label">Electronics DIY Kit — Box Keyline</div>
+        <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+          <defs>
+            <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6" fill="none" stroke="#00e5ff" stroke-width="0.8"/>
+            </marker>
+          </defs>
+          <!-- main box face -->
+          <rect x="80" y="30" width="140" height="100" fill="none" stroke="#00e5ff" stroke-width="0.8" stroke-dasharray="4,2"/>
+          <!-- top flap -->
+          <rect x="80" y="5" width="140" height="25" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+          <!-- bottom flap -->
+          <rect x="80" y="130" width="140" height="25" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+          <!-- left side panel -->
+          <rect x="40" y="30" width="40" height="100" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+          <!-- right side panel -->
+          <rect x="220" y="30" width="40" height="100" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+          <!-- fold lines -->
+          <line x1="80" y1="30" x2="80" y2="130" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <line x1="220" y1="30" x2="220" y2="130" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <line x1="80" y1="30" x2="220" y2="30" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <line x1="80" y1="130" x2="220" y2="130" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <!-- cutout circle -->
+          <circle cx="150" cy="80" r="18" fill="none" stroke="#ffb800" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <!-- dimension arrows -->
+          <line x1="80" y1="165" x2="220" y2="165" stroke="#00e5ff" stroke-width="0.5" marker-end="url(#arr)" marker-start="url(#arr)" opacity="0.5"/>
+          <text x="150" y="175" fill="#4a5070" font-size="7" font-family="Space Mono,monospace" text-anchor="middle">140mm</text>
+          <line x1="265" y1="30" x2="265" y2="130" stroke="#00e5ff" stroke-width="0.5" marker-end="url(#arr)" marker-start="url(#arr)" opacity="0.5"/>
+          <text x="275" y="82" fill="#4a5070" font-size="7" font-family="Space Mono,monospace" text-anchor="middle" transform="rotate(90,275,82)">100mm</text>
+          <!-- registration marks -->
+          <g stroke="#00e5ff" stroke-width="0.4" opacity="0.5">
+            <line x1="20" y1="14" x2="30" y2="14"/><line x1="25" y1="9" x2="25" y2="19"/>
+            <line x1="270" y1="14" x2="280" y2="14"/><line x1="275" y1="9" x2="275" y2="19"/>
+          </g>
+          <!-- label -->
+          <text x="150" y="80" fill="rgba(0,229,255,0.2)" font-size="28" font-family="Space Mono,monospace" text-anchor="middle" dominant-baseline="middle" font-weight="700">ELEC</text>
+        </svg>
+        <div class="keyline-desc">15-experiment electronics kit packaging. Cut lines in cyan, fold lines in magenta. Designed for flat-pack assembly with registration marks.</div>
+      </div>
+
+      <!-- Keyline 2: Teaching Aid Panel -->
+      <div class="keyline-card reveal">
+        <div class="keyline-label">Teaching Aid — Panel Layout</div>
+        <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+          <!-- outer panel -->
+          <rect x="20" y="20" width="260" height="160" fill="none" stroke="#00e5ff" stroke-width="0.8" stroke-dasharray="5,2"/>
+          <!-- inner content area -->
+          <rect x="35" y="35" width="230" height="130" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="0.4"/>
+          <!-- grid divisions -->
+          <line x1="35" y1="95" x2="265" y2="95" stroke="rgba(255,45,120,0.4)" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <line x1="35" y1="67" x2="265" y2="67" stroke="rgba(255,45,120,0.2)" stroke-width="0.4" stroke-dasharray="2,4"/>
+          <line x1="35" y1="123" x2="265" y2="123" stroke="rgba(255,45,120,0.2)" stroke-width="0.4" stroke-dasharray="2,4"/>
+          <line x1="150" y1="35" x2="150" y2="165" stroke="rgba(255,45,120,0.4)" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <!-- component outlines -->
+          <rect x="45" y="42" width="90" height="20" fill="none" stroke="#ffb800" stroke-width="0.6" rx="2"/>
+          <rect x="165" y="42" width="90" height="20" fill="none" stroke="#ffb800" stroke-width="0.6" rx="2"/>
+          <rect x="45" y="73" width="40" height="40" fill="none" stroke="#ffb800" stroke-width="0.6"/>
+          <rect x="100" y="73" width="40" height="40" fill="none" stroke="#ffb800" stroke-width="0.6"/>
+          <rect x="165" y="73" width="85" height="40" fill="none" stroke="#ffb800" stroke-width="0.6"/>
+          <rect x="45" y="128" width="200" height="28" fill="none" stroke="rgba(255,184,0,0.4)" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <!-- corner marks -->
+          <g stroke="#00e5ff" stroke-width="0.5" opacity="0.6">
+            <polyline points="20,28 20,20 28,20"/><polyline points="272,20 280,20 280,28"/>
+            <polyline points="20,172 20,180 28,180"/><polyline points="272,180 280,180 280,172"/>
+          </g>
+          <!-- text labels -->
+          <text x="90" y="53" fill="rgba(255,184,0,0.5)" font-size="6" font-family="Space Mono,monospace" text-anchor="middle">HEADER ZONE</text>
+          <text x="210" y="53" fill="rgba(255,184,0,0.5)" font-size="6" font-family="Space Mono,monospace" text-anchor="middle">LOGO ZONE</text>
+          <text x="65" y="96" fill="rgba(255,184,0,0.5)" font-size="5" font-family="Space Mono,monospace" text-anchor="middle">A</text>
+          <text x="120" y="96" fill="rgba(255,184,0,0.5)" font-size="5" font-family="Space Mono,monospace" text-anchor="middle">B</text>
+          <text x="207" y="96" fill="rgba(255,184,0,0.5)" font-size="5" font-family="Space Mono,monospace" text-anchor="middle">CONTENT</text>
+          <text x="145" y="144" fill="rgba(255,184,0,0.3)" font-size="5.5" font-family="Space Mono,monospace" text-anchor="middle">FOOTER / BLEED ZONE</text>
+        </svg>
+        <div class="keyline-desc">Teaching aid panel with zoned layout for header, content sections, and footer bleed. Used for 60-product teaching aid series.</div>
+      </div>
+
+      <!-- Keyline 3: Science Learning Aid -->
+      <div class="keyline-card reveal">
+        <div class="keyline-label">Learning Aid — Science Component</div>
+        <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+          <!-- Hexagonal tile arrangement (science kit pieces) -->
+          <g transform="translate(150,100)">
+            <!-- center hex -->
+            <polygon points="0,-35 30,-17 30,17 0,35 -30,17 -30,-17" fill="none" stroke="#00e5ff" stroke-width="0.8" stroke-dasharray="4,2"/>
+            <!-- surrounding hexes - top -->
+            <polygon points="0,-69 30,-52 30,-18 0,-35 -30,-18 -30,-52" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+            <!-- top-right -->
+            <polygon points="52,-18 82,-1 82,33 52,50 22,33 22,-1" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+            <!-- bottom-right -->
+            <polygon points="52,52 82,69 82,103 52,120 22,103 22,69" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="0.4" transform="translate(0,-52)"/>
+            <!-- bottom -->
+            <polygon points="0,35 30,52 30,86 0,103 -30,86 -30,52" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+            <!-- top-left -->
+            <polygon points="-52,-18 -22,-1 -22,33 -52,50 -82,33 -82,-1" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+            <!-- fold lines -->
+            <line x1="0" y1="-35" x2="0" y2="-69" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3" opacity="0.6"/>
+            <line x1="30" y1="-17" x2="52" y2="-18" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3" opacity="0.6"/>
+            <line x1="30" y1="17" x2="52" y2="18" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3" opacity="0.6"/>
+            <line x1="0" y1="35" x2="0" y2="52" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3" opacity="0.6"/>
+            <line x1="-30" y1="17" x2="-52" y2="18" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3" opacity="0.6"/>
+            <line x1="-30" y1="-17" x2="-52" y2="-18" stroke="#ff2d78" stroke-width="0.5" stroke-dasharray="2,3" opacity="0.6"/>
+            <!-- amber accent -->
+            <circle cx="0" cy="0" r="12" fill="none" stroke="#ffb800" stroke-width="0.7" stroke-dasharray="3,2"/>
+            <circle cx="0" cy="0" r="4" fill="rgba(255,184,0,0.3)"/>
+            <!-- labels -->
+            <text x="0" y="-52" fill="rgba(0,229,255,0.4)" font-size="5" font-family="Space Mono,monospace" text-anchor="middle">TOP</text>
+            <text x="0" y="55" fill="rgba(0,229,255,0.4)" font-size="5" font-family="Space Mono,monospace" text-anchor="middle">BTM</text>
+          </g>
+          <!-- corner marks -->
+          <g stroke="#00e5ff" stroke-width="0.5" opacity="0.4">
+            <polyline points="10,10 2,10 2,2 10,2"/><polyline points="290,10 298,10 298,2 290,2"/>
+            <polyline points="10,190 2,190 2,198 10,198"/><polyline points="290,190 298,190 298,198 290,198"/>
+          </g>
+        </svg>
+        <div class="keyline-desc">Modular hexagonal science kit component. 150+ products in the Learning Aids–Science series used this tiling system for flat-pack efficiency.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CODE ═══════════ -->
+<section id="code" class="chapter code-section">
+  <div class="ch-label reveal">Chapter 03 — Code</div>
+  <h2 class="ch-title reveal">Python that <em>thinks</em></h2>
+  <div class="code-layout">
+    <div class="code-info reveal-left">
+      <h3>CutIt — Bin Packing Engine</h3>
+      <p>The core algorithm behind the steel sheet optimiser built for Positron Engineering Corp. A heuristic 2D bin-packing solver that minimises material wastage in real-time.</p>
+      <div>
+        <span class="code-badge">Python</span>
+        <span class="code-badge">Heuristic</span>
+        <span class="code-badge">Optimisation</span>
+        <span class="code-badge">MSME Project</span>
+      </div>
+      <br><br>
+      <h3>F.R.I.D.A.Y — NLP Core</h3>
+      <p>The intent-classification layer of the student AI assistant. A feedforward neural net trained on student query patterns with a custom tokeniser.</p>
+      <div>
+        <span class="code-badge" style="border-color:rgba(0,229,255,0.3);color:var(--cyan)">NLP</span>
+        <span class="code-badge" style="border-color:rgba(0,229,255,0.3);color:var(--cyan)">FNN</span>
+        <span class="code-badge" style="border-color:rgba(0,229,255,0.3);color:var(--cyan)">AI/ML</span>
+      </div>
+    </div>
+    <div class="reveal-right">
+      <div class="code-window">
+        <div class="code-titlebar">
+          <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+          <div class="code-filename">cutit_solver.py</div>
+        </div>
+        <pre id="codeBlock"><span class="code-line"><span class="cm"># CutIt — 2D Bin Packing · Karan N. Londe</span></span>
+<span class="code-line"><span class="kw">import</span> <span class="var">numpy</span> <span class="kw">as</span> <span class="var">np</span></span>
+<span class="code-line"><span class="kw">from</span> <span class="var">dataclasses</span> <span class="kw">import</span> <span class="fn">dataclass</span></span>
+<span class="code-line"><span class="kw">from</span> <span class="var">typing</span> <span class="kw">import</span> <span class="cls">List</span>, <span class="cls">Tuple</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="fn">@dataclass</span></span>
+<span class="code-line"><span class="kw">class</span> <span class="cls">Rect</span>:</span>
+<span class="code-line">    <span class="var">w</span>: <span class="cls">float</span>; <span class="var">h</span>: <span class="cls">float</span></span>
+<span class="code-line">    <span class="var">x</span>: <span class="cls">float</span> <span class="op">=</span> <span class="num">0.0</span>; <span class="var">y</span>: <span class="cls">float</span> <span class="op">=</span> <span class="num">0.0</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="kw">class</span> <span class="cls">SheetOptimiser</span>:</span>
+<span class="code-line">    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, <span class="var">W</span>: <span class="cls">float</span>, <span class="var">H</span>: <span class="cls">float</span>):</span>
+<span class="code-line">        <span class="var">self</span>.<span class="var">W</span>, <span class="var">self</span>.<span class="var">H</span> <span class="op">=</span> <span class="var">W</span>, <span class="var">H</span></span>
+<span class="code-line">        <span class="var">self</span>.<span class="var">spaces</span>: <span class="cls">List</span>[<span class="cls">Rect</span>] <span class="op">=</span> [<span class="cls">Rect</span>(<span class="var">W</span>, <span class="var">H</span>)]</span>
+<span class="code-line">        <span class="var">self</span>.<span class="var">placed</span>: <span class="cls">List</span>[<span class="cls">Rect</span>] <span class="op">=</span> []</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="kw">def</span> <span class="fn">pack</span>(<span class="var">self</span>, <span class="var">pieces</span>: <span class="cls">List</span>[<span class="cls">Rect</span>]) <span class="op">-></span> <span class="cls">float</span>:</span>
+<span class="code-line">        <span class="cm">  # Sort by area desc — best-fit heuristic</span></span>
+<span class="code-line">        <span class="var">pieces</span>.<span class="fn">sort</span>(<span class="var">key</span><span class="op">=</span><span class="kw">lambda</span> <span class="var">p</span>: <span class="var">p</span>.<span class="var">w</span><span class="op">*</span><span class="var">p</span>.<span class="var">h</span>, <span class="var">reverse</span><span class="op">=</span><span class="kw">True</span>)</span>
+<span class="code-line">        <span class="kw">for</span> <span class="var">p</span> <span class="kw">in</span> <span class="var">pieces</span>:</span>
+<span class="code-line">            <span class="var">s</span> <span class="op">=</span> <span class="var">self</span>.<span class="fn">_best_space</span>(<span class="var">p</span>)</span>
+<span class="code-line">            <span class="kw">if</span> <span class="var">s</span>: <span class="var">self</span>.<span class="fn">_place</span>(<span class="var">p</span>, <span class="var">s</span>)</span>
+<span class="code-line">        <span class="var">used</span> <span class="op">=</span> <span class="fn">sum</span>(<span class="var">r</span>.<span class="var">w</span><span class="op">*</span><span class="var">r</span>.<span class="var">h</span> <span class="kw">for</span> <span class="var">r</span> <span class="kw">in</span> <span class="var">self</span>.<span class="var">placed</span>)</span>
+<span class="code-line">        <span class="kw">return</span> <span class="fn">round</span>(<span class="var">used</span> <span class="op">/</span> (<span class="var">self</span>.<span class="var">W</span><span class="op">*</span><span class="var">self</span>.<span class="var">H</span>) <span class="op">*</span> <span class="num">100</span>, <span class="num">2</span>)</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="kw">def</span> <span class="fn">_best_space</span>(<span class="var">self</span>, <span class="var">p</span>):</span>
+<span class="code-line">        <span class="kw">return</span> <span class="fn">min</span>(</span>
+<span class="code-line">            (<span class="var">s</span> <span class="kw">for</span> <span class="var">s</span> <span class="kw">in</span> <span class="var">self</span>.<span class="var">spaces</span></span>
+<span class="code-line">             <span class="kw">if</span> <span class="var">s</span>.<span class="var">w</span> <span class="op">>=</span> <span class="var">p</span>.<span class="var">w</span> <span class="kw">and</span> <span class="var">s</span>.<span class="var">h</span> <span class="op">>=</span> <span class="var">p</span>.<span class="var">h</span>),</span>
+<span class="code-line">            <span class="var">key</span><span class="op">=</span><span class="kw">lambda</span> <span class="var">s</span>: <span class="var">s</span>.<span class="var">w</span><span class="op">*</span><span class="var">s</span>.<span class="var">h</span>, <span class="var">default</span><span class="op">=</span><span class="kw">None</span>)</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PROJECTS ═══════════ -->
+<section id="projects" class="chapter projects-section">
+  <div class="ch-label reveal">Chapter 04 — Projects</div>
+  <h2 class="ch-title reveal"><span class="stroke">Five</span> experiments<br>in <em>applied thinking</em></h2>
+  <div class="projects-strip reveal">
+
+    <div class="proj-card">
+      <div class="proj-visual" id="vis1"></div>
+      <div class="proj-body">
+        <div class="proj-num-tag">PROJECT · 01</div>
+        <div class="proj-name">CutIt — Sheet Optimiser</div>
+        <div class="proj-blurb">Real-time 2D bin-packing for steel cutting industries. Reduces wastage, maximises yield per sheet. Built under MSME for Positron Engineering Corp.</div>
+        <div class="proj-stack">
+          <span class="stack-pill">Python</span><span class="stack-pill">Flutter</span>
+          <span class="stack-pill">Flask</span><span class="stack-pill">Heuristic</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card">
+      <div class="proj-visual" id="vis2"></div>
+      <div class="proj-body">
+        <div class="proj-num-tag">PROJECT · 02</div>
+        <div class="proj-name">F.R.I.D.A.Y</div>
+        <div class="proj-blurb">Virtual AI assistant for students. NLP + FNN for intent classification, query answering, and academic task automation.</div>
+        <div class="proj-stack">
+          <span class="stack-pill">Python</span><span class="stack-pill">NLP</span>
+          <span class="stack-pill">FNN</span><span class="stack-pill">AI/ML</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card">
+      <div class="proj-visual" id="vis3"></div>
+      <div class="proj-body">
+        <div class="proj-num-tag">PROJECT · 03</div>
+        <div class="proj-name">ULTRON — Humanoid Robot</div>
+        <div class="proj-blurb">Raspberry Pi powered humanoid desktop assistant. Actuators + ML inference. Real robotics meets software intelligence.</div>
+        <div class="proj-stack">
+          <span class="stack-pill">Raspberry Pi</span><span class="stack-pill">Python</span>
+          <span class="stack-pill">ML</span><span class="stack-pill">Actuators</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card">
+      <div class="proj-visual" id="vis4"></div>
+      <div class="proj-body">
+        <div class="proj-num-tag">PROJECT · 04</div>
+        <div class="proj-name">I.R MAN — Wearable IoT</div>
+        <div class="proj-blurb">Wearable ultrasound-sensor device assisting visually impaired people with obstacle detection and spatial awareness.</div>
+        <div class="proj-stack">
+          <span class="stack-pill">Arduino</span><span class="stack-pill">Sensors</span>
+          <span class="stack-pill">IoT</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card">
+      <div class="proj-visual" id="vis5"></div>
+      <div class="proj-body">
+        <div class="proj-num-tag">PROJECT · 05</div>
+        <div class="proj-name">FIFA Performance Predictor</div>
+        <div class="proj-blurb">ML pipeline for predicting player performance from FIFA datasets. EDA, random forest, linear regression benchmarked head-to-head.</div>
+        <div class="proj-stack">
+          <span class="stack-pill">Python</span><span class="stack-pill">Pandas</span>
+          <span class="stack-pill">Scikit-learn</span><span class="stack-pill">EDA</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════ EXPERIENCE ═══════════ -->
+<div id="exp" class="exp-section">
+  <div class="exp-inner">
+    <div class="ch-label reveal">Chapter 05 — Experience</div>
+    <h2 class="ch-title reveal">Where ideas <em>became</em><br>real objects</h2>
+    <div class="timeline reveal">
+      <div class="tl-entry">
+        <div class="tl-node"></div>
+        <div class="tl-period">March 2025 — May 2026</div>
+        <div class="tl-role">Research Associate</div>
+        <div class="tl-company">Gyanpro Educational Innovation Pvt. Ltd.</div>
+        <ul class="tl-items">
+          <li>Designed 15-experiment Electronics DIY Kit — manuals, instruction videos, manufacturing & assembly.</li>
+          <li>ODOO ERP setup — inventory audit, data analysis, full system update for stock operations.</li>
+          <li>Teaching Aid (60 products) — keyline design in CorelDraw, manufacturing, assembly.</li>
+          <li>Learning Aids Math (12) and Science (150+) — design verification, redesign, production approval.</li>
+          <li>Physical STEM lab installation across Karnataka and Kerala for govt. and private schools.</li>
+        </ul>
+        <div class="tl-tags">
+          <span class="tl-tag">CorelDraw</span><span class="tl-tag">Product Dev</span>
+          <span class="tl-tag">ODOO ERP</span><span class="tl-tag">STEM Labs</span>
+          <span class="tl-tag">Content Creation</span><span class="tl-tag">Manufacturing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ TIMELINE ═══════════ -->
+<section id="timeline-section">
+<div class="timeline-container">
+<div class="timeline-header">
+<p class="timeline-eyebrow">THE JOURNEY</p>
+<h2 class="timeline-title">Timeline</h2>
+</div>
+<div class="timeline-wrapper">
+<div class="timeline-line" id="timelineLine"></div>
+
+<div class="timeline-item"><div class="timeline-dot" style="border:2px solid #FF6B35"></div><div class="timeline-content left"><span class="timeline-year">2017</span><h3>SSLC</h3><p>St. Mary's High School, Belagavi — Foundation laid</p></div></div>
+
+<div class="timeline-item"><div class="timeline-dot" style="border:2px solid #FF6B35"></div><div class="timeline-content right"><span class="timeline-year">2017 – 2020</span><h3>PUC</h3><p>Jain Heritage College, Belagavi — Sciences and the art of questioning</p></div></div>
+
+<div class="timeline-item"><div class="timeline-dot" style="border:2px solid #00B4D8"></div><div class="timeline-content left"><span class="timeline-year" style="color:#00B4D8">2020 – 2024</span><h3>BE Electronics & Communication</h3><p>KLE Dr. M.S. Sheshgiri College of Engineering — The engineering mind meets philosophy</p></div></div>
+
+<div class="timeline-item"><div class="timeline-dot" style="border:2px solid #C77DFF"></div><div class="timeline-content right"><span class="timeline-year" style="color:#C77DFF">2024</span><h3>Kāla Siddhānta Published</h3><p>The complete description of time itself — introducing the Londe Radius and Kāla Vyāpi framework</p></div></div>
+
+<div class="timeline-item"><div class="timeline-dot" style="border:2px solid #FF6B35"></div><div class="timeline-content left"><span class="timeline-year">2025 – Present</span><h3>Research Associate</h3><p>Gyanpro Educational Innovation Pvt. Ltd. — Electronics DIY kits, ODOO ERP, Teaching Aids, STEM Lab deployments across Karnataka and Kerala</p></div></div>
+
+</div></div></section>
+
+
+<!-- ═══════════ BOOK ═══════════ -->
+<section id="book" class="book-section">
+  <div class="book-bg-text">Kāla</div>
+  <div class="book-layout">
+    <div class="book-meta-block reveal-left">
+      <div class="ch-label" style="margin-bottom:1.5rem">Chapter 06 — Authorship</div>
+      <div class="book-title-big">Kāla Siddhānta</div>
+      <div class="book-sub-italic">A complete description of Time itself</div>
+      <p class="book-desc">A philosophical and theoretical treatise on the fundamental nature of time — its structure, perception, and implications across cosmology, consciousness, and human experience. Written with an engineer's precision and a philosopher's wonder.</p>
+      <div class="book-detail">
+        <div class="book-detail-item"><div class="bdl">Publisher</div><div class="bdv">ukiyoto</div></div>
+        <div class="book-detail-item"><div class="bdl">Author</div><div class="bdv">Karan N. Londe</div></div>
+        <div class="book-detail-item"><div class="bdl">Available</div><div class="bdv">Amazon India</div></div>
+      </div>
+      <a href="https://www.amazon.in/K%C4%81la-Siddh%C4%81nta-Karan-N-Londe/dp/9360496995" target="_blank" class="book-cta">Get the Book →</a>
+    </div>
+    <div class="book-canvas-wrap reveal-right">
+      <canvas id="book-canvas" width="340" height="440"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SKILLS ═══════════ -->
+<section class="chapter">
+  <div class="ch-label reveal">Chapter 07 — Arsenal</div>
+  <h2 class="ch-title reveal">Tools of the <em>trade</em></h2>
+  <div class="skills-viz">
+    <div class="skill-bars">
+      <div>
+        <div class="skill-item reveal"><div class="skill-name">Python <span class="skill-pct">92%</span></div><div class="skill-track"><div class="skill-fill c" style="width:92%"></div></div></div>
+        <div class="skill-item reveal"><div class="skill-name">AI / ML <span class="skill-pct">85%</span></div><div class="skill-track"><div class="skill-fill c" style="width:85%"></div></div></div>
+        <div class="skill-item reveal"><div class="skill-name">CorelDraw <span class="skill-pct">90%</span></div><div class="skill-track"><div class="skill-fill m" style="width:90%"></div></div></div>
+        <div class="skill-item reveal"><div class="skill-name">Flutter <span class="skill-pct">72%</span></div><div class="skill-track"><div class="skill-fill m" style="width:72%"></div></div></div>
+        <div class="skill-item reveal"><div class="skill-name">Product Design <span class="skill-pct">88%</span></div><div class="skill-track"><div class="skill-fill a" style="width:88%"></div></div></div>
+      </div>
+      <div>
+        <div class="skill-item reveal"><div class="skill-name">C / C++ <span class="skill-pct">78%</span></div><div class="skill-track"><div class="skill-fill c" style="width:78%"></div></div></div>
+        <div class="skill-item reveal"><div class="skill-name">Arduino / Raspberry Pi <span class="skill-pct">80%</span></div><div class="skill-track"><div class="skill-fill c" style="width:80%"></div></div></div>
+        <div class="skill-item reveal"><div class="skill-name">MongoDB / MySQL <span class="skill-pct">70%</span></div><div class="skill-track"><div class="skill-fill m" style="width:70%"></div></div></div>
+        <div class="skill-item reveal"><div class="skill-name">Video Editing <span class="skill-pct">75%</span></div><div class="skill-track"><div class="skill-fill a" style="width:75%"></div></div></div>
+        <div class="skill-item reveal"><div class="skill-name">Authorship / Research <span class="skill-pct">95%</span></div><div class="skill-track"><div class="skill-fill a" style="width:95%"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CONTACT ═══════════ -->
+<section class="contact-section">
+  <div class="contact-inner">
+    <div class="contact-big reveal">
+      Let's<br><span>build</span><br>something.
+    </div>
+    <div class="contact-links reveal">
+      <a href="mailto:karan.n.londe@gmail.com" class="c-link">
+        <div class="c-link-icon">✉</div>karan.n.londe@gmail.com
+      </a>
+      <a href="tel:+919845899558" class="c-link">
+        <div class="c-link-icon">✆</div>+91 98458 99558
+      </a>
+      <a href="https://www.linkedin.com/in/londekaran" target="_blank" class="c-link">
+        <div class="c-link-icon">in</div>linkedin.com/in/londekaran
+      </a>
+      <a href="https://www.amazon.in/K%C4%81la-Siddh%C4%81nta-Karan-N-Londe/dp/9360496995" target="_blank" class="c-link">
+        <div class="c-link-icon">✦</div>Kāla Siddhānta
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 Karan N. Londe</span>
+  <span>Belagavi · KA · IN</span>
+  <span>Built from scratch, like everything else.</span>
+</footer>
+
+<!-- ════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════ -->
+<script>
+// ── CURSOR
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+});
+function animRing(){
+  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('a,button,.proj-card,.keyline-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{
+    cur.style.transform='translate(-50%,-50%) scale(2.5)';
+    ring.style.width='54px'; ring.style.height='54px';
+  });
+  el.addEventListener('mouseleave',()=>{
+    cur.style.transform='translate(-50%,-50%) scale(1)';
+    ring.style.width='36px'; ring.style.height='36px';
+  });
+});
+
+// ── LOADER
+window.addEventListener('load',()=>{
+  setTimeout(()=>document.getElementById('loader').classList.add('hidden'),800);
+});
+
+// ── PARTICLE BACKGROUND
+(function(){
+  const c=document.getElementById('bg-canvas');
+  const ctx=c.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;init()}
+  function init(){
+    pts=[];
+    const n=Math.floor(W*H/9000);
+    for(let i=0;i<n;i++) pts.push({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,
+      r:Math.random()*1.5+.3,
+      a:Math.random(),da:(Math.random()-.5)*.008,
+      col:Math.random()<.15?'0,229,255':Math.random()<.3?'255,45,120':'180,200,255'
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.a+=p.da;
+      if(p.a>1||p.a<.05)p.da*=-1;
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.col},${p.a})`;
+      ctx.fill();
+    });
+    // constellation lines
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y;
+        const d=dx*dx+dy*dy;
+        if(d<8000){
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x,pts[i].y);
+          ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle=`rgba(0,229,255,${0.06*(1-d/8000)})`;
+          ctx.lineWidth=.4;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  resize(); draw();
+})();
+
+// ── 3D TILT CARD
+const card=document.getElementById('aboutCard');
+if(card){
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const cx=(e.clientX-r.left)/r.width-.5;
+    const cy=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`perspective(600px) rotateY(${cx*16}deg) rotateX(${-cy*16}deg)`;
+  });
+  card.addEventListener('mouseleave',()=>{card.style.transform='none'});
+}
+
+// ── PROJECT VISUAL CANVASES
+function projCanvas(id,type){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const c=document.createElement('canvas');
+  c.width=320; c.height=180;
+  c.style.width='100%'; c.style.height='100%';
+  el.appendChild(c);
+  const ctx=c.getContext('2d');
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,320,180);
+    ctx.fillStyle='#080b14';
+    ctx.fillRect(0,0,320,180);
+    if(type==='grid'){
+      // Bin packing visualisation
+      const cells=[
+        [10,10,100,60,'rgba(0,229,255,0.15)','rgba(0,229,255,0.5)'],
+        [115,10,80,60,'rgba(255,45,120,0.15)','rgba(255,45,120,0.5)'],
+        [200,10,110,35,'rgba(255,184,0,0.15)','rgba(255,184,0,0.5)'],
+        [10,75,140,80,'rgba(0,229,255,0.1)','rgba(0,229,255,0.3)'],
+        [155,75,70,80,'rgba(255,45,120,0.1)','rgba(255,45,120,0.3)'],
+        [230,50,80,105,'rgba(255,184,0,0.1)','rgba(255,184,0,0.3)'],
+        [10,160,300,15,'rgba(100,100,100,0.1)','rgba(100,100,100,0.2)'],
+      ];
+      cells.forEach(([x,y,w,h,fill,stroke])=>{
+        ctx.fillStyle=fill; ctx.fillRect(x,y,w,h);
+        ctx.strokeStyle=stroke; ctx.lineWidth=1; ctx.strokeRect(x,y,w,h);
+      });
+      ctx.fillStyle='rgba(0,229,255,0.6)';
+      ctx.font='bold 10px Space Mono,monospace';
+      ctx.fillText('YIELD: 94.2%',10,174);
+      ctx.fillStyle='rgba(255,255,255,0.15)';
+      ctx.font='8px Space Mono,monospace';
+      ctx.fillText('CUTIT SOLVER v1.0',200,174);
+    } else if(type==='neural'){
+      // Neural network diagram
+      const layers=[[90,3],[160,4],[230,4],[290,2]];
+      const colors=['#00e5ff','#bd93f9','#ff79c6','#50fa7b'];
+      layers.forEach(([x,n],li)=>{
+        for(let i=0;i<n;i++){
+          const y=90-(n-1)*22+i*44;
+          if(li<layers.length-1){
+            const [nx,nn]=layers[li+1];
+            for(let j=0;j<nn;j++){
+              const ny=90-(nn-1)*22+j*44;
+              const pulse=(Math.sin(t*0.04+li+i+j)*.5+.5);
+              ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(nx,ny);
+              ctx.strokeStyle=`rgba(100,80,180,${0.1+pulse*0.25})`; ctx.lineWidth=1; ctx.stroke();
+            }
+          }
+          const pulse=Math.sin(t*0.05+li*2+i);
+          ctx.beginPath(); ctx.arc(x,y,9+pulse*2,0,Math.PI*2);
+          ctx.fillStyle=colors[li]+'33'; ctx.fill();
+          ctx.strokeStyle=colors[li]; ctx.lineWidth=1.5; ctx.stroke();
+        }
+      });
+      ctx.fillStyle='rgba(189,147,249,0.6)';
+      ctx.font='8px Space Mono,monospace';
+      ctx.fillText('F.R.I.D.A.Y  FNN',10,170);
+    } else if(type==='robo'){
+      // Robot silhouette
+      const s=Math.sin(t*0.03)*2;
+      ctx.strokeStyle='rgba(0,229,255,0.6)'; ctx.lineWidth=1.5;
+      // body
+      ctx.strokeRect(110+s,50,100,75);
+      // head
+      ctx.strokeRect(125+s,20,70,35);
+      // eyes
+      ctx.beginPath(); ctx.arc(145+s,37,5,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(255,45,120,${0.6+Math.sin(t*.08)*.4})`; ctx.stroke();
+      ctx.beginPath(); ctx.arc(175+s,37,5,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(255,45,120,${0.6+Math.sin(t*.08+1)*.4})`; ctx.stroke();
+      // arms
+      ctx.strokeStyle='rgba(0,229,255,0.4)';
+      ctx.strokeRect(65+s,55,45,50); ctx.strokeRect(210+s,55,45,50);
+      // legs
+      ctx.strokeRect(115+s,125,35,40); ctx.strokeRect(170+s,125,35,40);
+      // antenna
+      ctx.beginPath(); ctx.moveTo(160+s,20); ctx.lineTo(160+s,5);
+      ctx.strokeStyle='rgba(255,184,0,0.8)'; ctx.stroke();
+      ctx.beginPath(); ctx.arc(160+s,3,4,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,184,0,${.5+Math.sin(t*.1)*.5})`; ctx.fill();
+      ctx.fillStyle='rgba(0,229,255,0.5)'; ctx.font='7px Space Mono,monospace';
+      ctx.fillText('ULTRON v1.0',100,170);
+    } else if(type==='sensor'){
+      // Sonar/ultrasound waves
+      const cx=160,cy=120;
+      for(let i=1;i<=5;i++){
+        const r=(i*25+t*1.5)%130;
+        const a=((t*0.02+i*0.3));
+        ctx.beginPath();
+        ctx.arc(cx,cy,r,Math.PI+a,Math.PI*2+a);
+        ctx.strokeStyle=`rgba(0,229,255,${0.6-r/150})`; ctx.lineWidth=1.5; ctx.stroke();
+      }
+      // device body
+      ctx.fillStyle='rgba(0,229,255,0.1)';
+      ctx.fillRect(125,105,70,30);
+      ctx.strokeStyle='rgba(0,229,255,0.8)'; ctx.lineWidth=1.5;
+      ctx.strokeRect(125,105,70,30);
+      // obstacle
+      const ox=50+Math.sin(t*0.02)*30;
+      ctx.fillStyle='rgba(255,45,120,0.15)';
+      ctx.fillRect(ox,30,40,80);
+      ctx.strokeStyle='rgba(255,45,120,0.6)'; ctx.strokeRect(ox,30,40,80);
+      ctx.fillStyle='rgba(0,229,255,0.6)'; ctx.font='7px Space Mono,monospace';
+      ctx.fillText('OBSTACLE DETECTED',70,170);
+    } else if(type==='chart'){
+      // Bar chart - player ratings
+      const bars=[
+        {v:85,c:'rgba(0,229,255,0.8)',l:'PAC'},
+        {v:72,c:'rgba(255,45,120,0.8)',l:'SHO'},
+        {v:90,c:'rgba(255,184,0,0.8)',l:'PAS'},
+        {v:68,c:'rgba(0,229,255,0.6)',l:'DRI'},
+        {v:45,c:'rgba(255,45,120,0.6)',l:'DEF'},
+        {v:78,c:'rgba(255,184,0,0.6)',l:'PHY'},
+      ];
+      const bw=36,gap=12,start=18;
+      bars.forEach((b,i)=>{
+        const x=start+i*(bw+gap);
+        const h=(b.v/100)*120;
+        const pulse=Math.sin(t*0.04+i)*.03;
+        ctx.fillStyle=b.c.replace('0.8',String(0.8+pulse)).replace('0.6',String(0.6+pulse));
+        ctx.fillRect(x,155-h,bw,h);
+        ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='bold 9px Space Mono,monospace';
+        ctx.textAlign='center'; ctx.fillText(b.l,x+bw/2,168);
+        ctx.fillStyle='rgba(255,255,255,0.6)'; ctx.font='8px Space Mono,monospace';
+        ctx.fillText(b.v,x+bw/2,148-h);
+      });
+      ctx.textAlign='left';
+      ctx.fillStyle='rgba(255,184,0,0.6)'; ctx.font='7px Space Mono,monospace';
+      ctx.fillText('FIFA PERFORMANCE MODEL',10,12);
+    }
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+projCanvas('vis1','grid');
+projCanvas('vis2','neural');
+projCanvas('vis3','robo');
+projCanvas('vis4','sensor');
+projCanvas('vis5','chart');
+
+// ── 3D BOOK CANVAS (hand-drawn 3D, no Three.js dependency needed)
+(function(){
+  const c=document.getElementById('book-canvas');
+  if(!c)return;
+  const ctx=c.getContext('2d');
+  const W=c.width, H=c.height;
+  let angleY=0.3, angleX=-0.1;
+  let dragging=false, lastX=0, lastY=0;
+  let autoSpin=true;
+
+  c.addEventListener('mousedown',e=>{dragging=true;lastX=e.offsetX;lastY=e.offsetY;autoSpin=false});
+  c.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    angleY+=(e.offsetX-lastX)*0.01;
+    angleX+=(e.offsetY-lastY)*0.008;
+    lastX=e.offsetX; lastY=e.offsetY;
+  });
+  c.addEventListener('mouseup',()=>{dragging=false});
+  c.addEventListener('mouseleave',()=>{dragging=false;autoSpin=true});
+  c.addEventListener('touchstart',e=>{
+    dragging=true;lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;autoSpin=false;
+    e.preventDefault();
+  },{passive:false});
+  c.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    angleY+=(e.touches[0].clientX-lastX)*0.01;
+    angleX+=(e.touches[0].clientY-lastY)*0.008;
+    lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+    e.preventDefault();
+  },{passive:false});
+  c.addEventListener('touchend',()=>{dragging=false;autoSpin=true});
+
+  function project(x,y,z){
+    const cosY=Math.cos(angleY),sinY=Math.sin(angleY);
+    const cosX=Math.cos(angleX),sinX=Math.sin(angleX);
+    let x1=x*cosY-z*sinY, z1=x*sinY+z*cosY;
+    let y1=y*cosX-z1*sinX, z2=y*sinX+z1*cosX;
+    const fov=380, scale=fov/(fov+z2+200);
+    return [W/2+x1*scale, H/2+y1*scale, z2, scale];
+  }
+
+  function drawBook(){
+    ctx.clearRect(0,0,W,H);
+
+    // Book dimensions
+    const bw=110, bh=155, bd=18;
+    const hbw=bw/2, hbh=bh/2, hbd=bd/2;
+
+    // 8 corners of the book
+    const corners=[
+      [-hbw,-hbh,-hbd],[hbw,-hbh,-hbd],[hbw,hbh,-hbd],[-hbw,hbh,-hbd],
+      [-hbw,-hbh,hbd],[hbw,-hbh,hbd],[hbw,hbh,hbd],[-hbw,hbh,hbd],
+    ].map(([x,y,z])=>project(x,y,z));
+
+    // 6 faces: [indices, color, isfront]
+    const faces=[
+      {idx:[0,1,2,3],label:'front'},  // front face (cover)
+      {idx:[4,5,6,7],label:'back'},   // back
+      {idx:[0,4,7,3],label:'left'},   // spine
+      {idx:[1,5,6,2],label:'right'},  // right side
+      {idx:[0,1,5,4],label:'top'},    // top
+      {idx:[3,2,6,7],label:'bottom'}, // bottom
+    ];
+
+    // Sort faces by average z (painter's algorithm)
+    const sorted=faces.map(f=>{
+      const pts=f.idx.map(i=>corners[i]);
+      const avgZ=pts.reduce((s,p)=>s+p[2],0)/pts.length;
+      return {...f, pts, avgZ};
+    }).sort((a,b)=>b.avgZ-a.avgZ);
+
+    sorted.forEach(f=>{
+      const pts=f.pts;
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0],pts[0][1]);
+      for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+      ctx.closePath();
+
+      if(f.label==='front'){
+        // Draw the book cover
+        const gradient=ctx.createLinearGradient(pts[0][0],pts[0][1],pts[2][0],pts[2][1]);
+        gradient.addColorStop(0,'#1a0a2e');
+        gradient.addColorStop(0.4,'#0d1a3a');
+        gradient.addColorStop(1,'#0a0a1a');
+        ctx.fillStyle=gradient; ctx.fill();
+        ctx.strokeStyle='rgba(201,168,76,0.8)'; ctx.lineWidth=1.5; ctx.stroke();
+
+        // Draw cover art inside clipped region
+        ctx.save(); ctx.clip();
+
+        // Decorative concentric ellipses (cosmic)
+        const cx2=(pts[0][0]+pts[2][0])/2, cy2=(pts[0][1]+pts[2][1])/2;
+        const sc=pts[0][3];
+        for(let i=5;i>0;i--){
+          ctx.beginPath();
+          ctx.ellipse(cx2,cy2,bw*0.45*sc*(i/5),bh*0.45*sc*(i/5),0,0,Math.PI*2);
+          ctx.strokeStyle=`rgba(201,168,76,${0.08+(5-i)*0.04})`; ctx.lineWidth=0.8; ctx.stroke();
+        }
+
+        // Title text
+        ctx.fillStyle='rgba(201,168,76,0.95)';
+        ctx.font=`bold ${Math.round(13*sc)}px Playfair Display,serif`;
+        ctx.textAlign='center';
+        ctx.fillText('KĀLA',cx2,cy2-30*sc);
+        ctx.fillText('SIDDHĀNTA',cx2,cy2-14*sc);
+        ctx.font=`italic ${Math.round(7*sc)}px Playfair Display,serif`;
+        ctx.fillStyle='rgba(180,200,255,0.7)';
+        ctx.fillText('A complete description of Time itself',cx2,cy2+2*sc);
+        ctx.font=`${Math.round(7*sc)}px Space Mono,monospace`;
+        ctx.fillStyle='rgba(255,255,255,0.4)';
+        ctx.fillText('Karan N. Londe',cx2,cy2+30*sc);
+        ctx.textAlign='left';
+        ctx.restore();
+      } else if(f.label==='spine'){
+        const spineGrad=ctx.createLinearGradient(pts[0][0],pts[0][1],pts[1][0],pts[1][1]);
+        spineGrad.addColorStop(0,'#2d1544');
+        spineGrad.addColorStop(1,'#1a0a2e');
+        ctx.fillStyle=spineGrad; ctx.fill();
+        ctx.strokeStyle='rgba(201,168,76,0.5)'; ctx.lineWidth=1; ctx.stroke();
+      } else if(f.label==='top'||f.label==='bottom'){
+        ctx.fillStyle='rgba(230,225,200,0.85)'; ctx.fill();
+        ctx.strokeStyle='rgba(200,190,160,0.5)'; ctx.lineWidth=0.5; ctx.stroke();
+        // page lines
+        const [ax,ay]=pts[0], [bx,by]=pts[1];
+        ctx.save(); ctx.clip();
+        for(let i=1;i<12;i++){
+          ctx.beginPath();
+          const t2=i/12;
+          ctx.moveTo(ax+(bx-ax)*t2-1,ay+(by-ay)*t2);
+          ctx.lineTo(pts[3][0]+(pts[2][0]-pts[3][0])*t2,pts[3][1]+(pts[2][1]-pts[3][1])*t2);
+          ctx.strokeStyle='rgba(180,170,140,0.4)'; ctx.lineWidth=0.4; ctx.stroke();
+        }
+        ctx.restore();
+      } else {
+        ctx.fillStyle='rgba(20,8,40,0.9)'; ctx.fill();
+        ctx.strokeStyle='rgba(201,168,76,0.3)'; ctx.lineWidth=1; ctx.stroke();
+      }
+    });
+
+    // Ambient glow
+    const glow=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,160);
+    glow.addColorStop(0,'rgba(201,168,76,0.08)');
+    glow.addColorStop(1,'transparent');
+    ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+  }
+
+  function loop(){
+    if(autoSpin) angleY+=0.007;
+    angleX=Math.max(-0.5,Math.min(0.5,angleX));
+    drawBook();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+// ── SCROLL REVEAL
+const revealEls=document.querySelectorAll('.reveal,.reveal-left,.reveal-right');
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')});
+},{threshold:0.1});
+revealEls.forEach(el=>io.observe(el));
+
+// ── SKILL BARS ANIMATE ON SCROLL
+const skillFills=document.querySelectorAll('.skill-fill');
+const skillIO=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('animated')});
+},{threshold:0.2});
+skillFills.forEach(el=>skillIO.observe(el));
+
+const timelineLine=document.getElementById('timelineLine');
+const timelineItems=document.querySelectorAll('.timeline-item');
+if(timelineLine){
+const observer=new IntersectionObserver((entries)=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+timelineLine.style.transition='transform 2s ease';
+timelineLine.style.transform='scaleY(1)';
+timelineItems.forEach((item,index)=>{
+setTimeout(()=>item.classList.add('show'),index*250);
+});
+observer.disconnect();
+}});
+},{threshold:0.2});
+observer.observe(document.querySelector('#timeline-section'));
+}
+
+</script>
+</body>
+</html>
