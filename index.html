@@ -74,10 +74,22 @@ nav::after{
   z-index:-1;pointer-events:none;
 }
 .nav-logo{
+  position:relative;
   font-family:'Space Mono',monospace;
   font-size:0.85rem;color:var(--cyan);text-decoration:none;
   letter-spacing:0.1em;
+  padding-bottom:0.4rem;
+  transition:color 0.3s;
 }
+.nav-logo::after{
+  content:'';position:absolute;left:0;bottom:0;
+  width:100%;height:1px;
+  background:linear-gradient(to right,var(--cyan),var(--magenta));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 0.4s cubic-bezier(.4,0,.2,1);
+}
+.nav-logo:hover{color:var(--white)}
+.nav-logo:hover::after{transform:scaleX(1)}
 .nav-links{display:flex;gap:2.5rem;list-style:none}
 .nav-links a{
   position:relative;
@@ -159,7 +171,7 @@ nav::after{
 /* ─── SECTION SHARED ─── */
 .chapter{
   position:relative;z-index:2;
-  max-width:1200px;margin:0 auto;padding:8rem 3rem;
+  max-width:1200px;margin:0 auto;padding: 10px;
 }
 .ch-label{
   font-family:'Space Mono',monospace;
@@ -179,7 +191,7 @@ nav::after{
 
 /* ─── ABOUT ─── */
 .about-layout{
-  display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;margin-top:3rem;
+  display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;margin-top:0.5rem;
 }
 .about-text p{
   color:#8892b0;line-height:1.9;font-size:0.95rem;margin-bottom:1rem;
@@ -191,7 +203,7 @@ nav::after{
   border:1px solid rgba(0,229,255,0.15);
   border-radius:8px;padding:2.5rem;
   transform-style:preserve-3d;
-  transition:transform 0.1s;
+  transition:transform 0.5s;
 }
 .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
 .stat{border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:1rem}
@@ -208,7 +220,7 @@ nav::after{
 }
 
 /* ─── KEYLINE SHOWCASE ─── */
-.keyline-section{background:var(--bg2);padding:6rem 0;position:relative;z-index:2}
+.keyline-section{background:var(--bg2);padding: 20px;position:relative;z-index:2}
 .keyline-inner{max-width:1200px;margin:0 auto;padding:0 3rem}
 .keyline-grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:3rem;
@@ -232,7 +244,7 @@ nav::after{
 .keyline-desc{font-size:0.78rem;color:var(--dim);margin-top:1rem;line-height:1.6}
 
 /* ─── CODE SHOWCASE ─── */
-.code-section{position:relative;z-index:2;padding:0}
+.code-section{position:relative;z-index:2;padding: 20px;}
 .code-layout{
   display:grid;grid-template-columns:1fr 1.4fr;gap:4rem;align-items:start;
   margin-top:3rem;
@@ -326,7 +338,7 @@ pre{
 }
 
 /* ─── EXPERIENCE ─── */
-.exp-section{background:var(--bg2);padding:6rem 0;position:relative;z-index:2}
+.exp-section{background:var(--bg2);padding: 20px; position:relative;z-index:2}
 .exp-inner{max-width:1200px;margin:0 auto;padding:0 3rem}
 .timeline{position:relative;margin-top:4rem;padding-left:3rem}
 .timeline::before{
@@ -365,7 +377,7 @@ pre{
 /* ─── BOOK 3D ─── */
 .book-section{
   position:relative;z-index:2;
-  min-height:100vh;display:flex;align-items:center;
+  min-height:90vh;display:flex;align-items:center;
   overflow:hidden;
 }
 .book-bg-text{
@@ -437,7 +449,7 @@ pre{
 }
 
 /* ─── SKILLS ─── */
-.skills-viz{margin-top:3rem}
+.skills-viz{margin-top:4rem; padding-bottom:10rem;}
 .skill-bars{display:grid;grid-template-columns:1fr 1fr;gap:1rem 3rem}
 .skill-item{margin-bottom:0.8rem}
 .skill-name{
@@ -461,10 +473,10 @@ pre{
 /* ─── CONTACT ─── */
 .contact-section{
   position:relative;z-index:2;
-  min-height:60vh;display:flex;align-items:center;
+  min: height 40px;display:flex;align-items:center;
   border-top:1px solid rgba(255,255,255,0.04);
 }
-.contact-inner{max-width:1200px;margin:0 auto;padding:6rem 3rem;width:100%}
+.contact-inner{max-width:1200px;margin:0 auto;padding: 70px;width:100%}
 .contact-big{
   font-family:'Playfair Display',serif;
   font-size:clamp(2.5rem,8vw,7rem);font-weight:300;font-style:italic;
@@ -524,7 +536,7 @@ body::after{
   position:relative;
   z-index:2;
   background:var(--bg2);
-  padding:120px 0;
+  padding:30px 0;
   overflow:hidden;
 }
 
@@ -1201,6 +1213,8 @@ body::after{
   <span>Built from scratch, like everything else.</span>
 </footer>
 
+<div id="scroll-spacer" style="height:0px"></div>
+
 <!-- ════════════════════════════════
      SCRIPTS
      ════════════════════════════════ -->
@@ -1478,6 +1492,34 @@ observer.observe(document.querySelector('#timeline-section'));
   const navLinks=Array.from(document.querySelectorAll('.nav-links a[href^="#"]'));
   const navEl=document.querySelector('nav');
   const navHeight=()=>navEl?navEl.offsetHeight+10:90;
+  const sections=navLinks
+    .map(l=>document.querySelector(l.getAttribute('href')))
+    .filter(Boolean);
+
+  // Guarantee every section — even short ones at the very end of the page —
+  // has enough room below it to scroll all the way up under the fixed nav.
+  // Without this, the last section(s) can get stuck behind whatever content
+  // was previously on screen, because the browser has nowhere left to scroll.
+  const spacer=document.getElementById('scroll-spacer');
+  function ensureScrollRoom(){
+    if(!spacer)return;
+    spacer.style.height='0px';
+    let maxNeeded=0;
+    sections.forEach(sec=>{
+      const targetY=sec.getBoundingClientRect().top+window.pageYOffset-navHeight();
+      if(targetY>maxNeeded)maxNeeded=targetY;
+    });
+    const maxScroll=document.documentElement.scrollHeight-window.innerHeight;
+    const shortfall=maxNeeded-maxScroll;
+    spacer.style.height=(shortfall>0?shortfall:0)+'px';
+  }
+  ensureScrollRoom();
+  window.addEventListener('load',ensureScrollRoom);
+  let resizeT;
+  window.addEventListener('resize',()=>{
+    clearTimeout(resizeT);
+    resizeT=setTimeout(ensureScrollRoom,150);
+  });
 
   function easeInOutCubic(t){
     return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
@@ -1514,6 +1556,7 @@ observer.observe(document.querySelector('#timeline-section'));
       navLinks.forEach(l=>l.classList.remove('active'));
       link.classList.add('active','navigating');
 
+      ensureScrollRoom();
       const targetY=target.getBoundingClientRect().top+window.pageYOffset-navHeight();
       const distance=Math.abs(targetY-window.pageYOffset);
       const duration=Math.min(1400,Math.max(500,distance*0.6));
@@ -1525,9 +1568,6 @@ observer.observe(document.querySelector('#timeline-section'));
   });
 
   // Scrollspy: highlight nav link matching the section currently in view
-  const sections=navLinks
-    .map(l=>document.querySelector(l.getAttribute('href')))
-    .filter(Boolean);
   const spyIO=new IntersectionObserver(entries=>{
     entries.forEach(entry=>{
       if(entry.isIntersecting){
